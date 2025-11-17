@@ -7,6 +7,7 @@ import os
 import sys
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
+import asyncio
 
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +17,11 @@ from pydantic import BaseModel
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from database.supabase_client import get_supabase_client
+
+# Import chat agents
+from agents.signal_agent_chat import SignalAgentChat
+from agents.insight_agent_chat import InsightAgentChat
+from agents.venture_agent_chat import VentureAgentChat
 
 app = FastAPI(
     title="Multi-Agent Intelligence Dashboard API",
@@ -51,6 +57,47 @@ class PipelineMetricsResponse(BaseModel):
     signals: int
     insights: int
     investments: int
+
+
+class ChatMessage(BaseModel):
+    message: str
+    agent_name: str
+    auto_query_kb: bool = True
+
+
+class ChatResponse(BaseModel):
+    message: str
+    agent: str
+    timestamp: str
+    success: bool
+    tokens_used: Optional[int] = None
+    generated_signals: Optional[List[Dict]] = None
+    custom_analysis: Optional[Dict] = None
+    recommendations: Optional[List[Dict]] = None
+
+
+# Initialize chat agents
+chat_agents = {
+    "signal_agent": None,
+    "insight_agent": None,
+    "venture_agent": None
+}
+
+
+def get_chat_agent(agent_name: str):
+    """Get or initialize chat agent"""
+    if agent_name not in chat_agents:
+        raise HTTPException(status_code=404, detail=f"Agent {agent_name} not found")
+
+    if chat_agents[agent_name] is None:
+        if agent_name == "signal_agent":
+            chat_agents[agent_name] = SignalAgentChat()
+        elif agent_name == "insight_agent":
+            chat_agents[agent_name] = InsightAgentChat()
+        elif agent_name == "venture_agent":
+            chat_agents[agent_name] = VentureAgentChat()
+
+    return chat_agents[agent_name]
 
 
 # Routes
@@ -160,6 +207,108 @@ async def trigger_agent_run(agent_name: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Chat endpoints
+@app.post("/chat/{agent_name}", response_model=ChatResponse)
+async def chat_with_agent(agent_name: str, chat_message: ChatMessage):
+    """
+    Chat with an agent
+
+    Supported agents: signal_agent, insight_agent, venture_agent
+    """
+    try:
+        agent = get_chat_agent(agent_name)
+
+        if agent_name == "signal_agent":
+            response = await agent.process_user_request(
+                chat_message.message,
+                auto_query_kb=chat_message.auto_query_kb
+            )
+        else:
+            response = agent.process_user_request(
+                chat_message.message,
+                auto_query_kb=chat_message.auto_query_kb
+            )
+
+        return response
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/chat/{agent_name}/history")
+def get_chat_history(agent_name: str, limit: int = 50):
+    """Get chat history for an agent"""
+    try:
+        agent = get_chat_agent(agent_name)
+        history = agent.get_chat_history(limit=limit)
+        return {
+            "agent": agent_name,
+            "history": history,
+            "count": len(history)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/chat/{agent_name}/history")
+def clear_chat_history(agent_name: str):
+    """Clear chat history for an agent"""
+    try:
+        agent = get_chat_agent(agent_name)
+        agent.clear_chat_history()
+        return {
+            "agent": agent_name,
+            "status": "cleared",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/agents/list")
+def list_agents():
+    """List all available agents"""
+    return {
+        "agents": [
+            {
+                "name": "data_agent",
+                "display_name": "数据采集Agent",
+                "description": "从多个源采集数据",
+                "chat_enabled": False,
+                "status": "background"
+            },
+            {
+                "name": "classify_agent",
+                "display_name": "分类Agent",
+                "description": "对数据进行分类和标注",
+                "chat_enabled": False,
+                "status": "background"
+            },
+            {
+                "name": "signal_agent",
+                "display_name": "信号Agent",
+                "description": "生成小红书风格的信号",
+                "chat_enabled": True,
+                "capabilities": ["生成信号", "查询知识库", "验证信息"]
+            },
+            {
+                "name": "insight_agent",
+                "display_name": "洞察Agent",
+                "description": "生成投资洞察和分析",
+                "chat_enabled": True,
+                "capabilities": ["趋势分析", "类别分析", "定制报告"]
+            },
+            {
+                "name": "venture_agent",
+                "display_name": "投资Agent",
+                "description": "分析投资机会和创始人",
+                "chat_enabled": True,
+                "capabilities": ["投资推荐", "创始人研究", "公司分析"]
+            }
+        ]
+    }
 
 
 @app.websocket("/ws/logs")
