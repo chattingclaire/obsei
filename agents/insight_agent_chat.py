@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.agent_chat_interface import AgentChatInterface
 from agents.insight_agent import InsightAgent
+from core.advanced_memory import get_advanced_memory_manager
 
 
 class InsightAgentChat(AgentChatInterface):
@@ -20,30 +21,60 @@ class InsightAgentChat(AgentChatInterface):
 
     def __init__(self):
         # Load system prompt
-        with open("prompts/agents/insight_agent.md", "r") as f:
-            system_prompt = f.read()
+        prompt_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "config", "prompts", "insight_agent_prompt.md"
+        )
+        try:
+            with open(prompt_path, "r") as f:
+                system_prompt = f.read()
+        except FileNotFoundError:
+            system_prompt = "You are an Insight Agent that analyzes trends and patterns in startup data."
 
         super().__init__("insight_agent", system_prompt)
 
         # Initialize insight agent
         self.insight_agent = InsightAgent()
 
+        # Initialize advanced memory system (Mem0 + Zep)
+        self.memory = get_advanced_memory_manager("insight_agent")
+
     def process_user_request(
         self,
         user_message: str,
+        user_id: str = "default_user",
+        session_id: Optional[str] = None,
         auto_query_kb: bool = True
     ) -> Dict[str, Any]:
         """
-        Process user request for insights
+        Process user request for insights with advanced memory
 
         Args:
             user_message: User's message
+            user_id: User identifier
+            session_id: Session identifier
             auto_query_kb: Automatically query knowledge base
 
         Returns:
             Response with insights and analysis
         """
+        # Generate session ID if not provided
+        if not session_id:
+            import uuid
+            session_id = f"insight_session_{uuid.uuid4().hex[:8]}"
+
+        # Ensure session exists
+        self.memory.create_session(session_id, user_id, metadata={"agent": "insight_agent"})
+
         context = {}
+
+        # Retrieve context from memory systems
+        memory_context = self.memory.retrieve_context(
+            query=user_message,
+            session_id=session_id,
+            user_id=user_id,
+            include_long_term=True
+        )
 
         # Query knowledge base
         if auto_query_kb:
@@ -57,8 +88,20 @@ class InsightAgentChat(AgentChatInterface):
             context["stats"] = self.db.get_pipeline_metrics()
             context["category_distribution"] = self.db.get_category_distribution()
 
+        # Add memory context
+        context["memory"] = memory_context
+
         # Get response
         response = self.chat(user_message, context=context)
+
+        # Save to memory
+        self.memory.add_conversation(
+            user_message=user_message,
+            assistant_message=response.get("message", ""),
+            session_id=session_id,
+            user_id=user_id,
+            metadata={"kb_query": auto_query_kb}
+        )
 
         # Check if user wants custom analysis
         if "分析" in user_message or "analysis" in user_message.lower():
@@ -66,6 +109,7 @@ class InsightAgentChat(AgentChatInterface):
             custom_analysis = self._generate_custom_analysis(analysis_type, context)
             response["custom_analysis"] = custom_analysis
 
+        response["session_id"] = session_id
         return response
 
     def _extract_analysis_type(self, message: str) -> str:

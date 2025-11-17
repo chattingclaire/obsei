@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.agent_chat_interface import AgentChatInterface
 from agents.venture_agent import VentureAgent
+from core.advanced_memory import get_advanced_memory_manager
 
 
 class VentureAgentChat(AgentChatInterface):
@@ -20,30 +21,60 @@ class VentureAgentChat(AgentChatInterface):
 
     def __init__(self):
         # Load system prompt
-        with open("prompts/agents/venture_agent.md", "r") as f:
-            system_prompt = f.read()
+        prompt_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "config", "prompts", "venture_agent_prompt.md"
+        )
+        try:
+            with open(prompt_path, "r") as f:
+                system_prompt = f.read()
+        except FileNotFoundError:
+            system_prompt = "You are a Venture Agent that analyzes investment opportunities and founder backgrounds."
 
         super().__init__("venture_agent", system_prompt)
 
         # Initialize venture agent
         self.venture_agent = VentureAgent()
 
+        # Initialize advanced memory system (Mem0 + Zep)
+        self.memory = get_advanced_memory_manager("venture_agent")
+
     def process_user_request(
         self,
         user_message: str,
+        user_id: str = "default_user",
+        session_id: Optional[str] = None,
         auto_query_kb: bool = True
     ) -> Dict[str, Any]:
         """
-        Process user request for investment analysis
+        Process user request for investment analysis with advanced memory
 
         Args:
             user_message: User's message
+            user_id: User identifier
+            session_id: Session identifier
             auto_query_kb: Automatically query knowledge base
 
         Returns:
             Response with investment analysis
         """
+        # Generate session ID if not provided
+        if not session_id:
+            import uuid
+            session_id = f"venture_session_{uuid.uuid4().hex[:8]}"
+
+        # Ensure session exists
+        self.memory.create_session(session_id, user_id, metadata={"agent": "venture_agent"})
+
         context = {}
+
+        # Retrieve context from memory systems
+        memory_context = self.memory.retrieve_context(
+            query=user_message,
+            session_id=session_id,
+            user_id=user_id,
+            include_long_term=True
+        )
 
         # Query knowledge base
         if auto_query_kb:
@@ -64,8 +95,20 @@ class VentureAgentChat(AgentChatInterface):
             )
             context["founders"] = founders[:10]
 
+        # Add memory context
+        context["memory"] = memory_context
+
         # Get response
         response = self.chat(user_message, context=context)
+
+        # Save to memory
+        self.memory.add_conversation(
+            user_message=user_message,
+            assistant_message=response.get("message", ""),
+            session_id=session_id,
+            user_id=user_id,
+            metadata={"investment_query": auto_query_kb}
+        )
 
         # Check for specific requests
         if "分析" in user_message or "analyze" in user_message.lower():
@@ -80,6 +123,7 @@ class VentureAgentChat(AgentChatInterface):
             recommendations = self._generate_recommendations(user_message, context)
             response["recommendations"] = recommendations
 
+        response["session_id"] = session_id
         return response
 
     def _extract_entity(self, message: str) -> Optional[str]:

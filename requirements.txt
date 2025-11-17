@@ -12,6 +12,11 @@ pyyaml>=6.0
 supabase>=1.0.0
 postgrest-py>=0.10.0
 
+# Advanced Memory & Context (Open Source)
+mem0ai>=0.1.20
+zep-python>=2.0.0
+qdrant-client>=1.7.0
+
 # API Clients
 tweepy>=4.14.0
 praw>=7.7.0

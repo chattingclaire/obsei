@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.agent_chat_interface import AgentChatInterface
 from agents.signal_agent import SignalAgent
+from core.advanced_memory import get_advanced_memory_manager
 
 
 class SignalAgentChat(AgentChatInterface):
@@ -20,32 +21,62 @@ class SignalAgentChat(AgentChatInterface):
 
     def __init__(self):
         # Load system prompt
-        with open("prompts/agents/signal_agent.md", "r") as f:
-            system_prompt = f.read()
+        prompt_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "config", "prompts", "signal_agent_prompt.md"
+        )
+        try:
+            with open(prompt_path, "r") as f:
+                system_prompt = f.read()
+        except FileNotFoundError:
+            system_prompt = "You are a Signal Agent that generates insights and signals from startup data."
 
         super().__init__("signal_agent", system_prompt)
 
         # Initialize signal agent for background tasks
         self.signal_agent = SignalAgent()
 
+        # Initialize advanced memory system (Mem0 + Zep)
+        self.memory = get_advanced_memory_manager("signal_agent")
+
     async def process_user_request(
         self,
         user_message: str,
+        user_id: str = "default_user",
+        session_id: Optional[str] = None,
         auto_query_kb: bool = True
     ) -> Dict[str, Any]:
         """
-        Process user request with knowledge base integration
+        Process user request with knowledge base integration and advanced memory
 
         Args:
             user_message: User's message
+            user_id: User identifier
+            session_id: Session identifier (generated if not provided)
             auto_query_kb: Automatically query knowledge base
 
         Returns:
             Response with message and any generated signals
         """
+        # Generate session ID if not provided
+        if not session_id:
+            import uuid
+            session_id = f"signal_session_{uuid.uuid4().hex[:8]}"
+
+        # Ensure session exists in Zep
+        self.memory.create_session(session_id, user_id, metadata={"agent": "signal_agent"})
+
         context = {}
 
-        # Auto-query knowledge base if enabled
+        # 1. Retrieve context from advanced memory system
+        memory_context = self.memory.retrieve_context(
+            query=user_message,
+            session_id=session_id,
+            user_id=user_id,
+            include_long_term=True
+        )
+
+        # 2. Auto-query knowledge base if enabled
         if auto_query_kb:
             # Extract intent and keywords from message
             intent = self._extract_intent(user_message)
@@ -58,10 +89,25 @@ class SignalAgentChat(AgentChatInterface):
                 )
                 context["knowledge_base"] = kb_results
 
-        # Get response
+        # 3. Combine all context
+        context["memory"] = memory_context
+
+        # 4. Get response from Claude
         response = self.chat(user_message, context=context)
 
-        # Check if user wants to generate signals
+        # 5. Save conversation to memory systems
+        self.memory.add_conversation(
+            user_message=user_message,
+            assistant_message=response.get("message", ""),
+            session_id=session_id,
+            user_id=user_id,
+            metadata={
+                "kb_results_count": len(context.get("knowledge_base", {}).get("classified_items", [])),
+                "has_memory": bool(memory_context.get("long_term_memories"))
+            }
+        )
+
+        # 6. Check if user wants to generate signals
         if "生成信号" in user_message or "generate signal" in user_message.lower():
             # Extract parameters from conversation
             params = self._extract_signal_params(user_message)
@@ -70,6 +116,10 @@ class SignalAgentChat(AgentChatInterface):
             if params.get("item_ids"):
                 signals = await self._generate_signals_for_items(params["item_ids"])
                 response["generated_signals"] = signals
+
+        # 7. Add session info to response
+        response["session_id"] = session_id
+        response["memory_stats"] = self.memory.get_stats()
 
         return response
 
