@@ -1,0 +1,184 @@
+# ============================================================================
+# Agent Tools Configuration
+# ============================================================================
+# Defines which tools each agent has access to
+
+data_agent:
+  tools:
+    - browser_tool
+    - scraper_tool
+    - github_tool
+    - image_tool
+    - video_tool
+  description: "Multi-source data ingestion from GitHub, Twitter, Reddit, ProductHunt, etc."
+  tool_permissions:
+    browser_tool:
+      allowed_domains:
+        - "github.com"
+        - "twitter.com"
+        - "x.com"
+        - "reddit.com"
+        - "producthunt.com"
+        - "kickstarter.com"
+        - "crunchbase.com"
+        - "news.ycombinator.com"
+        - "techcrunch.com"
+        - "a16z.com"
+        - "youtube.com"
+      timeout_seconds: 30
+    scraper_tool:
+      max_retries: 3
+      rate_limit_delay: 1
+    github_tool:
+      max_repos_per_query: 50
+    image_tool:
+      max_size_mb: 10
+      allowed_formats:
+        - "png"
+        - "jpg"
+        - "jpeg"
+        - "webp"
+    video_tool:
+      max_duration_seconds: 300
+      extract_frames: true
+
+classify_agent:
+  tools: []
+  description: "Classification via Claude SDK - no external tools needed"
+  note: "Uses Claude API directly for classification tasks"
+
+signal_agent:
+  tools:
+    - browser_tool
+    - scraper_tool
+    - github_tool
+    - rss_tool
+  description: "Lightweight enrichment and signal generation"
+  tool_permissions:
+    browser_tool:
+      allowed_domains:
+        - "github.com"
+        - "producthunt.com"
+        - "twitter.com"
+        - "x.com"
+        - "crunchbase.com"
+        - "linkedin.com"
+      timeout_seconds: 20
+      max_searches_per_item: 3
+    scraper_tool:
+      max_retries: 2
+      timeout_seconds: 15
+    github_tool:
+      max_api_calls_per_item: 5
+    rss_tool:
+      max_items: 100
+      include_media: true
+
+insight_agent:
+  tools: []
+  description: "Weekly insights generation via Claude SDK"
+  note: "Reads from Supabase, uses Claude for analysis"
+
+venture_agent:
+  tools:
+    - scraper_tool
+    - github_tool
+  description: "Investment intelligence and founder analysis"
+  tool_permissions:
+    scraper_tool:
+      allowed_domains:
+        - "crunchbase.com"
+        - "linkedin.com"
+        - "pitchbook.com"
+      max_retries: 3
+    github_tool:
+      max_repos_per_founder: 20
+
+# Tool Definitions
+tool_definitions:
+  browser_tool:
+    type: "browser_automation"
+    providers:
+      - "playwright"
+      - "browserless"
+    capabilities:
+      - "page_navigation"
+      - "element_interaction"
+      - "screenshot_capture"
+      - "content_extraction"
+    rate_limits:
+      requests_per_minute: 60
+      concurrent_sessions: 5
+
+  scraper_tool:
+    type: "web_scraper"
+    libraries:
+      - "requests"
+      - "beautifulsoup4"
+      - "newspaper3k"
+      - "news-please"
+    capabilities:
+      - "html_parsing"
+      - "article_extraction"
+      - "metadata_extraction"
+    rate_limits:
+      requests_per_minute: 120
+
+  github_tool:
+    type: "api_client"
+    library: "PyGithub"
+    capabilities:
+      - "repo_search"
+      - "repo_metadata"
+      - "user_profile"
+      - "readme_extraction"
+      - "language_stats"
+    rate_limits:
+      requests_per_hour: 5000
+
+  image_tool:
+    type: "media_processor"
+    libraries:
+      - "pillow"
+      - "opencv-python"
+    capabilities:
+      - "image_download"
+      - "format_conversion"
+      - "metadata_extraction"
+      - "thumbnail_generation"
+
+  video_tool:
+    type: "media_processor"
+    libraries:
+      - "ffmpeg-python"
+      - "yt-dlp"
+    capabilities:
+      - "video_download"
+      - "frame_extraction"
+      - "metadata_extraction"
+      - "thumbnail_generation"
+
+  rss_tool:
+    type: "content_generator"
+    library: "feedgen"
+    capabilities:
+      - "feed_generation"
+      - "item_formatting"
+      - "media_enclosure"
+
+# MCP Configuration
+mcp:
+  enabled: true
+  version: "1.0.0"
+  server_mode: false
+  tool_registration:
+    auto_register: true
+    discovery_path: "tools/"
+
+  context_sharing:
+    enabled: true
+    max_context_size_mb: 5
+
+  tool_chaining:
+    enabled: true
+    max_chain_depth: 5

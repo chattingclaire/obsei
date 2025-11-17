@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "description": "3-Layer Classification Taxonomy for Multi-Agent Intelligence System",
+  "categories": {
+    "technology": {
+      "label": "Technology & Innovation",
+      "l1_code": "TECH",
+      "description": "Technology companies, products, and innovations",
+      "subcategories": {
+        "ai_ml": {
+          "label": "AI & Machine Learning",
+          "l2_code": "AI_ML",
+          "description": "Artificial intelligence and machine learning technologies",
+          "subcategories": {
+            "generative_ai": {"l3_code": "GEN_AI", "label": "Generative AI", "keywords": ["GPT", "LLM", "diffusion", "generative"]},
+            "computer_vision": {"l3_code": "CV", "label": "Computer Vision", "keywords": ["vision", "image recognition", "OCR"]},
+            "nlp": {"l3_code": "NLP", "label": "Natural Language Processing", "keywords": ["NLP", "text analysis", "language model"]},
+            "ml_ops": {"l3_code": "MLOPS", "label": "MLOps & Infrastructure", "keywords": ["MLOps", "model serving", "training infrastructure"]},
+            "robotics": {"l3_code": "ROBOT", "label": "Robotics & Automation", "keywords": ["robot", "autonomous", "automation"]}
+          }
+        },
+        "web3": {
+          "label": "Web3 & Blockchain",
+          "l2_code": "WEB3",
+          "description": "Blockchain, crypto, and decentralized technologies",
+          "subcategories": {
+            "defi": {"l3_code": "DEFI", "label": "DeFi", "keywords": ["DeFi", "decentralized finance", "lending", "staking"]},
+            "nft": {"l3_code": "NFT", "label": "NFT & Digital Assets", "keywords": ["NFT", "digital collectibles", "metaverse"]},
+            "l1_l2": {"l3_code": "L1L2", "label": "L1/L2 Infrastructure", "keywords": ["blockchain", "layer 1", "layer 2", "scaling"]},
+            "dao": {"l3_code": "DAO", "label": "DAO & Governance", "keywords": ["DAO", "governance", "voting"]},
+            "crypto_wallet": {"l3_code": "WALLET", "label": "Wallets & Custody", "keywords": ["wallet", "custody", "key management"]}
+          }
+        },
+        "developer_tools": {
+          "label": "Developer Tools",
+          "l2_code": "DEVTOOLS",
+          "description": "Tools and platforms for software development",
+          "subcategories": {
+            "ci_cd": {"l3_code": "CICD", "label": "CI/CD & DevOps", "keywords": ["CI/CD", "continuous integration", "deployment"]},
+            "api_tools": {"l3_code": "API", "label": "API & Integration", "keywords": ["API", "integration", "webhook"]},
+            "code_quality": {"l3_code": "CODE_Q", "label": "Code Quality & Testing", "keywords": ["testing", "linting", "code review"]},
+            "ide_editor": {"l3_code": "IDE", "label": "IDE & Editors", "keywords": ["IDE", "editor", "code editor"]},
+            "monitoring": {"l3_code": "MONITOR", "label": "Monitoring & Observability", "keywords": ["monitoring", "observability", "logging"]}
+          }
+        },
+        "saas_platform": {
+          "label": "SaaS & Platforms",
+          "l2_code": "SAAS",
+          "description": "Software as a Service and platform products",
+          "subcategories": {
+            "collaboration": {"l3_code": "COLLAB", "label": "Collaboration Tools", "keywords": ["collaboration", "team", "workspace"]},
+            "productivity": {"l3_code": "PROD", "label": "Productivity", "keywords": ["productivity", "task management", "workflow"]},
+            "crm_sales": {"l3_code": "CRM", "label": "CRM & Sales", "keywords": ["CRM", "sales", "customer management"]},
+            "hr_recruiting": {"l3_code": "HR", "label": "HR & Recruiting", "keywords": ["HR", "recruiting", "hiring", "talent"]},
+            "marketing": {"l3_code": "MKTG", "label": "Marketing & Analytics", "keywords": ["marketing", "analytics", "SEO", "growth"]}
+          }
+        },
+        "cybersecurity": {
+          "label": "Cybersecurity",
+          "l2_code": "CYBER",
+          "description": "Security products and services",
+          "subcategories": {
+            "app_sec": {"l3_code": "APPSEC", "label": "Application Security", "keywords": ["application security", "SAST", "DAST"]},
+            "cloud_sec": {"l3_code": "CLOUDSEC", "label": "Cloud Security", "keywords": ["cloud security", "CSPM", "posture management"]},
+            "identity": {"l3_code": "IDENTITY", "label": "Identity & Access", "keywords": ["IAM", "SSO", "authentication", "zero trust"]},
+            "threat_intel": {"l3_code": "THREAT", "label": "Threat Intelligence", "keywords": ["threat intelligence", "SOC", "SIEM"]},
+            "data_privacy": {"l3_code": "PRIVACY", "label": "Data Privacy", "keywords": ["privacy", "compliance", "GDPR", "encryption"]}
+          }
+        }
+      }
+    },
+    "business": {
+      "label": "Business & Services",
+      "l1_code": "BIZ",
+      "description": "Business services, operations, and traditional industries",
+      "subcategories": {
+        "fintech": {
+          "label": "Fintech",
+          "l2_code": "FINTECH",
+          "description": "Financial technology and services",
+          "subcategories": {
+            "payments": {"l3_code": "PAY", "label": "Payments", "keywords": ["payment", "transaction", "checkout"]},
+            "banking": {"l3_code": "BANK", "label": "Digital Banking", "keywords": ["neobank", "digital bank", "banking"]},
+            "lending": {"l3_code": "LEND", "label": "Lending & Credit", "keywords": ["lending", "credit", "loan"]},
+            "wealth": {"l3_code": "WEALTH", "label": "Wealth Management", "keywords": ["wealth", "investment", "trading", "robo-advisor"]},
+            "insurance": {"l3_code": "INSUR", "label": "Insurtech", "keywords": ["insurance", "insurtech", "underwriting"]}
+          }
+        },
+        "ecommerce": {
+          "label": "E-commerce & Retail",
+          "l2_code": "ECOMM",
+          "description": "Online commerce and retail technologies",
+          "subcategories": {
+            "marketplace": {"l3_code": "MARKET", "label": "Marketplace", "keywords": ["marketplace", "platform", "two-sided"]},
+            "dtc": {"l3_code": "DTC", "label": "Direct-to-Consumer", "keywords": ["DTC", "D2C", "direct to consumer", "brand"]},
+            "logistics": {"l3_code": "LOGIS", "label": "Logistics & Fulfillment", "keywords": ["logistics", "fulfillment", "shipping", "delivery"]},
+            "retail_tech": {"l3_code": "RETAIL", "label": "Retail Tech", "keywords": ["retail", "POS", "inventory", "store"]},
+            "social_commerce": {"l3_code": "SOC_COM", "label": "Social Commerce", "keywords": ["social commerce", "live shopping", "influencer"]}
+          }
+        },
+        "healthcare": {
+          "label": "Healthcare & Biotech",
+          "l2_code": "HEALTH",
+          "description": "Healthcare, medical, and biotechnology",
+          "subcategories": {
+            "digital_health": {"l3_code": "DHEALTH", "label": "Digital Health", "keywords": ["telemedicine", "digital health", "health app"]},
+            "medtech": {"l3_code": "MEDTECH", "label": "Medical Devices", "keywords": ["medical device", "diagnostic", "wearable"]},
+            "biotech": {"l3_code": "BIOTECH", "label": "Biotechnology", "keywords": ["biotech", "genomics", "drug discovery"]},
+            "mental_health": {"l3_code": "MENTAL", "label": "Mental Health", "keywords": ["mental health", "therapy", "wellness"]},
+            "health_data": {"l3_code": "HDATA", "label": "Health Data & Analytics", "keywords": ["health data", "EHR", "medical records"]}
+          }
+        },
+        "education": {
+          "label": "Education & Edtech",
+          "l2_code": "EDU",
+          "description": "Educational technology and learning platforms",
+          "subcategories": {
+            "online_learning": {"l3_code": "ONLINE_L", "label": "Online Learning", "keywords": ["online learning", "course", "MOOC"]},
+            "k12": {"l3_code": "K12", "label": "K-12 Education", "keywords": ["K-12", "school", "student"]},
+            "corporate_training": {"l3_code": "CORP_T", "label": "Corporate Training", "keywords": ["corporate training", "upskilling", "L&D"]},
+            "language": {"l3_code": "LANG", "label": "Language Learning", "keywords": ["language learning", "ESL", "translation"]},
+            "stem": {"l3_code": "STEM", "label": "STEM Education", "keywords": ["STEM", "coding", "robotics education"]}
+          }
+        }
+      }
+    },
+    "consumer": {
+      "label": "Consumer & Lifestyle",
+      "l1_code": "CONS",
+      "description": "Consumer products, services, and lifestyle",
+      "subcategories": {
+        "media": {
+          "label": "Media & Entertainment",
+          "l2_code": "MEDIA",
+          "description": "Media, entertainment, and content",
+          "subcategories": {
+            "streaming": {"l3_code": "STREAM", "label": "Streaming & Video", "keywords": ["streaming", "video", "OTT"]},
+            "gaming": {"l3_code": "GAMING", "label": "Gaming", "keywords": ["gaming", "game", "esports"]},
+            "podcast": {"l3_code": "PODCAST", "label": "Podcast & Audio", "keywords": ["podcast", "audio", "music"]},
+            "creator_tools": {"l3_code": "CREATE", "label": "Creator Tools", "keywords": ["creator", "content creation", "influencer tools"]},
+            "social_media": {"l3_code": "SOCIAL", "label": "Social Media", "keywords": ["social network", "community", "social app"]}
+          }
+        },
+        "lifestyle": {
+          "label": "Lifestyle & Wellness",
+          "l2_code": "LIFE",
+          "description": "Lifestyle, wellness, and personal services",
+          "subcategories": {
+            "fitness": {"l3_code": "FIT", "label": "Fitness & Exercise", "keywords": ["fitness", "workout", "exercise", "gym"]},
+            "nutrition": {"l3_code": "NUTRI", "label": "Nutrition & Diet", "keywords": ["nutrition", "diet", "meal", "food tech"]},
+            "beauty": {"l3_code": "BEAUTY", "label": "Beauty & Personal Care", "keywords": ["beauty", "cosmetics", "skincare"]},
+            "travel": {"l3_code": "TRAVEL", "label": "Travel & Hospitality", "keywords": ["travel", "hotel", "booking", "tourism"]},
+            "home": {"l3_code": "HOME", "label": "Home & Living", "keywords": ["home", "furniture", "interior", "smart home"]}
+          }
+        }
+      }
+    },
+    "emerging": {
+      "label": "Emerging & Frontier",
+      "l1_code": "EMERG",
+      "description": "Emerging technologies and frontier innovations",
+      "subcategories": {
+        "climate": {
+          "label": "Climate & Sustainability",
+          "l2_code": "CLIMATE",
+          "description": "Climate tech and sustainability solutions",
+          "subcategories": {
+            "carbon": {"l3_code": "CARBON", "label": "Carbon Management", "keywords": ["carbon", "emissions", "offset"]},
+            "clean_energy": {"l3_code": "ENERGY", "label": "Clean Energy", "keywords": ["solar", "wind", "renewable", "battery"]},
+            "circular": {"l3_code": "CIRCULAR", "label": "Circular Economy", "keywords": ["recycling", "circular", "waste", "sustainability"]},
+            "green_transport": {"l3_code": "G_TRANS", "label": "Green Transportation", "keywords": ["EV", "electric vehicle", "sustainable transport"]},
+            "climate_data": {"l3_code": "C_DATA", "label": "Climate Data & Analytics", "keywords": ["climate data", "ESG", "impact measurement"]}
+          }
+        },
+        "future_tech": {
+          "label": "Future Technologies",
+          "l2_code": "FUTURE",
+          "description": "Cutting-edge and experimental technologies",
+          "subcategories": {
+            "quantum": {"l3_code": "QUANTUM", "label": "Quantum Computing", "keywords": ["quantum", "qubit", "quantum computing"]},
+            "space": {"l3_code": "SPACE", "label": "Space Tech", "keywords": ["space", "satellite", "aerospace"]},
+            "ar_vr": {"l3_code": "ARVR", "label": "AR/VR/XR", "keywords": ["AR", "VR", "XR", "augmented reality", "virtual reality"]},
+            "iot": {"l3_code": "IOT", "label": "IoT & Edge", "keywords": ["IoT", "edge computing", "sensor", "connected devices"]},
+            "advanced_materials": {"l3_code": "MATERIALS", "label": "Advanced Materials", "keywords": ["materials", "nanotechnology", "3D printing"]}
+          }
+        }
+      }
+    }
+  },
+  "confidence_levels": {
+    "high": {"min": 0.8, "max": 1.0, "label": "High Confidence"},
+    "medium": {"min": 0.6, "max": 0.79, "label": "Medium Confidence"},
+    "low": {"min": 0.0, "max": 0.59, "label": "Low Confidence"}
+  },
+  "classification_rules": {
+    "multi_category": true,
+    "max_categories": 3,
+    "min_confidence": 0.6,
+    "require_l3": true
+  }
+}

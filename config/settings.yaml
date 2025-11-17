@@ -1,0 +1,303 @@
+# ============================================================================
+# Multi-Agent Intelligence System - Settings Configuration
+# ============================================================================
+
+system:
+  name: "Multi-Agent Intelligence Platform"
+  version: "1.0.0"
+  environment: "production"
+  log_level: "INFO"
+  timezone: "UTC"
+
+# Claude SDK Configuration with KV Cache
+claude:
+  model: "claude-sonnet-4-5-20250929"
+  max_tokens: 4096
+  temperature: 0.7
+  top_p: 0.9
+  kv_cache:
+    enabled: true
+    default_mode: "persistent"
+    ttl_seconds: 86400  # 24 hours default
+    per_agent:
+      data_agent: 21600      # 6 hours
+      classify_agent: 86400   # 24 hours
+      signal_agent: 43200     # 12 hours
+      insight_agent: 604800   # 7 days
+      venture_agent: 604800   # 7 days
+
+# Agent Pipeline Configuration
+pipeline:
+  mode: "continuous"  # continuous | scheduled | on-demand
+  interval_seconds: 300
+  retry_attempts: 3
+  retry_delay_seconds: 60
+  timeout_seconds: 3600
+
+  # Agent execution order
+  execution_order:
+    - data_agent
+    - classify_agent
+    - signal_agent
+    - insight_agent
+    - venture_agent
+
+  # Parallel execution groups
+  parallel_groups:
+    group1:
+      - data_agent
+    group2:
+      - classify_agent
+    group3:
+      - signal_agent
+      - insight_agent
+      - venture_agent
+
+# Agent Configurations
+agents:
+  data_agent:
+    enabled: true
+    interval_seconds: 300
+    batch_size: 100
+    max_items_per_run: 1000
+    sources:
+      github:
+        enabled: true
+        query_topics:
+          - "artificial-intelligence"
+          - "machine-learning"
+          - "web3"
+          - "cryptocurrency"
+          - "developer-tools"
+        min_stars: 100
+        max_results: 50
+
+      twitter:
+        enabled: true
+        keywords:
+          - "AI startup"
+          - "web3"
+          - "crypto"
+          - "YC"
+          - "funding"
+        max_results: 100
+
+      reddit:
+        enabled: true
+        subreddits:
+          - "startups"
+          - "MachineLearning"
+          - "artificial"
+          - "CryptoCurrency"
+          - "web3"
+        max_posts: 50
+
+      producthunt:
+        enabled: true
+        categories:
+          - "AI"
+          - "Developer Tools"
+          - "Productivity"
+        max_results: 50
+
+      hackernews:
+        enabled: true
+        item_types:
+          - "story"
+          - "job"
+        min_score: 50
+        max_results: 100
+
+      youtube:
+        enabled: true
+        channels:
+          - "YCombinator"
+          - "TechCrunch"
+        keywords:
+          - "startup pitch"
+          - "AI demo"
+        max_results: 20
+
+      techcrunch:
+        enabled: true
+        categories:
+          - "startups"
+          - "venture"
+          - "AI"
+        max_articles: 50
+
+      a16z_blog:
+        enabled: true
+        max_articles: 20
+
+      kickstarter:
+        enabled: true
+        categories:
+          - "Technology"
+        max_projects: 30
+
+      crunchbase:
+        enabled: true
+        funding_rounds:
+          - "seed"
+          - "series-a"
+          - "series-b"
+        max_results: 50
+
+  classify_agent:
+    enabled: true
+    interval_seconds: 60
+    batch_size: 50
+    confidence_threshold: 0.7
+    taxonomy_path: "config/taxonomy.json"
+
+  signal_agent:
+    enabled: true
+    interval_seconds: 120
+    batch_size: 30
+    enrichment:
+      enabled: true
+      timeout_seconds: 30
+      browser_enabled: true
+      max_retries: 2
+    xiaohongshu_format:
+      max_length: 1000
+      include_hashtags: true
+      include_emojis: false
+    rss:
+      enabled: true
+      feed_url: "https://your-domain.com/rss"
+      max_items: 100
+
+  insight_agent:
+    enabled: true
+    schedule: "weekly"  # daily | weekly | monthly
+    cron: "0 9 * * 1"  # Every Monday at 9 AM
+    lookback_days: 7
+    min_items_threshold: 50
+    output_format: "markdown"
+    usd_fund_style: true
+
+  venture_agent:
+    enabled: true
+    schedule: "daily"
+    cron: "0 10 * * *"  # Every day at 10 AM
+    focus:
+      founder_backgrounds:
+        - "Chinese"
+        - "Overseas Chinese"
+      funding_stages:
+        - "pre-seed"
+        - "seed"
+        - "series-a"
+      min_funding_amount_usd: 100000
+    scoring:
+      enabled: true
+      factors:
+        - "founder_background"
+        - "market_size"
+        - "technology_innovation"
+        - "team_experience"
+        - "traction"
+
+# Database Configuration
+database:
+  type: "supabase"
+  schema: "public"
+  tables:
+    raw_items: "raw_items"
+    classified_items: "classified_items"
+    founders: "founders"
+    signals: "signals"
+    insights: "insights"
+    investments: "investments"
+    agent_status: "agent_status"
+
+  realtime:
+    enabled: true
+    channels:
+      - "classified_items"
+      - "agent_status"
+
+  retention_days:
+    raw_items: 90
+    classified_items: 180
+    signals: 365
+    insights: 730
+    investments: 1825
+
+# Tools Configuration
+tools:
+  browser:
+    provider: "playwright"  # playwright | browserless
+    headless: true
+    timeout_seconds: 30
+    viewport:
+      width: 1920
+      height: 1080
+    user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+  scraper:
+    timeout_seconds: 30
+    max_retries: 3
+    rate_limit_delay_seconds: 1
+    user_agent: "multi-agent-intelligence-bot/1.0"
+
+  github:
+    max_retries: 3
+    rate_limit_buffer: 100
+
+  video:
+    ffmpeg_path: "/usr/bin/ffmpeg"
+    extract_frames: true
+    frames_per_second: 1
+    max_duration_seconds: 300
+
+  rss:
+    feed_title: "AI Intelligence Signals"
+    feed_description: "Curated signals from multi-agent intelligence platform"
+    max_items: 100
+
+# Memory & Context Configuration
+memory:
+  enabled: true
+  storage_type: "supabase"  # json | supabase
+  short_term:
+    max_items: 100
+    ttl_hours: 24
+  long_term:
+    max_items: 1000
+    ttl_days: 30
+  global_context:
+    enabled: true
+    max_size_mb: 10
+
+# Monitoring & Alerts
+monitoring:
+  heartbeat:
+    enabled: true
+    interval_seconds: 60
+    timeout_seconds: 300
+
+  alerts:
+    enabled: true
+    channels:
+      - "email"
+      - "slack"
+    conditions:
+      agent_failure: true
+      pipeline_stall: true
+      high_error_rate: true
+      low_throughput: true
+
+  metrics:
+    enabled: true
+    collection_interval_seconds: 60
+    retention_days: 30
+
+# Dashboard Configuration
+dashboard:
+  enabled: true
+  refresh_interval_seconds: 10
+  max_log_entries: 1000
+  realtime_enabled: true

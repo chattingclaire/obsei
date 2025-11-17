@@ -1,0 +1,264 @@
+# ============================================================================
+# MCP (Model Context Protocol) Configuration
+# ============================================================================
+# Define tools, capabilities, and context sharing for the multi-agent system
+
+version: "1.0.0"
+mcp_enabled: true
+
+# Tool Registry
+tools:
+  browser_tool:
+    name: "browser_tool"
+    description: "Browser automation with Playwright or Browserless"
+    module: "tools.browser_tool"
+    class: "BrowserTool"
+    capabilities:
+      - "page_navigation"
+      - "search"
+      - "screenshot"
+      - "content_extraction"
+    input_schema:
+      type: "object"
+      properties:
+        action:
+          type: "string"
+          enum: ["navigate", "search", "screenshot"]
+        url:
+          type: "string"
+        query:
+          type: "string"
+    output_schema:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        data:
+          type: "object"
+
+  scraper_tool:
+    name: "scraper_tool"
+    description: "Web scraping with BeautifulSoup, newspaper3k, news-please"
+    module: "tools.scraper_tool"
+    class: "ScraperTool"
+    capabilities:
+      - "html_scraping"
+      - "article_extraction"
+      - "rss_parsing"
+    input_schema:
+      type: "object"
+      properties:
+        url:
+          type: "string"
+        engine:
+          type: "string"
+          enum: ["html", "newspaper", "newsplease"]
+    output_schema:
+      type: "object"
+      properties:
+        success:
+          type: "boolean"
+        title:
+          type: "string"
+        text:
+          type: "string"
+
+  image_tool:
+    name: "image_tool"
+    description: "Image download and processing"
+    module: "tools.image_tool"
+    class: "ImageTool"
+    capabilities:
+      - "image_download"
+      - "metadata_extraction"
+      - "image_resize"
+      - "thumbnail_creation"
+    input_schema:
+      type: "object"
+      properties:
+        url:
+          type: "string"
+        action:
+          type: "string"
+          enum: ["download", "thumbnail", "resize"]
+
+  video_tool:
+    name: "video_tool"
+    description: "Video download and processing with yt-dlp and ffmpeg"
+    module: "tools.video_tool"
+    class: "VideoTool"
+    capabilities:
+      - "video_download"
+      - "video_info"
+      - "frame_extraction"
+      - "audio_extraction"
+    input_schema:
+      type: "object"
+      properties:
+        url:
+          type: "string"
+        action:
+          type: "string"
+          enum: ["download", "info", "extract_frames"]
+
+  github_tool:
+    name: "github_tool"
+    description: "GitHub API interaction with PyGithub"
+    module: "tools.github_tool"
+    class: "GitHubTool"
+    capabilities:
+      - "repo_search"
+      - "repo_metadata"
+      - "user_info"
+      - "code_search"
+    input_schema:
+      type: "object"
+      properties:
+        action:
+          type: "string"
+          enum: ["search_repos", "get_repo", "get_user", "search_code"]
+        query:
+          type: "string"
+
+  rss_tool:
+    name: "rss_tool"
+    description: "RSS/Atom feed generation"
+    module: "tools.rss_tool"
+    class: "RSSTool"
+    capabilities:
+      - "feed_generation"
+      - "entry_creation"
+      - "xiaohongshu_formatting"
+    input_schema:
+      type: "object"
+      properties:
+        signals:
+          type: "array"
+        format:
+          type: "string"
+          enum: ["rss", "atom"]
+
+# Context Sharing Configuration
+context:
+  enabled: true
+  max_context_size_mb: 5
+  shared_memory:
+    enabled: true
+    namespace: "multi_agent_system"
+
+  # Define what context each agent shares
+  agent_contexts:
+    data_agent:
+      shares:
+        - "ingestion_stats"
+        - "source_metadata"
+      receives:
+        - "classification_feedback"
+
+    classify_agent:
+      shares:
+        - "classification_results"
+        - "confidence_scores"
+      receives:
+        - "raw_item_metadata"
+
+    signal_agent:
+      shares:
+        - "enrichment_data"
+        - "signal_scores"
+      receives:
+        - "classification_results"
+        - "founder_data"
+
+    insight_agent:
+      shares:
+        - "trend_analysis"
+        - "insights"
+      receives:
+        - "historical_data"
+        - "signal_aggregates"
+
+    venture_agent:
+      shares:
+        - "investment_scores"
+        - "founder_analysis"
+      receives:
+        - "classified_items"
+        - "signal_data"
+
+# Tool Chaining
+chaining:
+  enabled: true
+  max_chain_depth: 5
+
+  # Define allowed tool chains
+  chains:
+    web_enrichment:
+      description: "Chain for web-based enrichment"
+      tools:
+        - browser_tool
+        - scraper_tool
+        - image_tool
+
+    github_analysis:
+      description: "Chain for GitHub repository analysis"
+      tools:
+        - github_tool
+        - scraper_tool
+
+    content_generation:
+      description: "Chain for content generation and RSS"
+      tools:
+        - rss_tool
+
+# Rate Limiting
+rate_limits:
+  browser_tool:
+    requests_per_minute: 60
+    concurrent_sessions: 5
+
+  scraper_tool:
+    requests_per_minute: 120
+
+  github_tool:
+    requests_per_hour: 5000
+
+  image_tool:
+    requests_per_minute: 100
+
+  video_tool:
+    requests_per_minute: 30
+
+# Error Handling
+error_handling:
+  retry_attempts: 3
+  retry_delay_seconds: 2
+  backoff_multiplier: 2
+
+  # Tool-specific error handlers
+  handlers:
+    browser_tool:
+      timeout_action: "retry"
+      error_action: "log_and_skip"
+
+    scraper_tool:
+      timeout_action: "retry"
+      error_action: "log_and_skip"
+
+    github_tool:
+      rate_limit_action: "wait_and_retry"
+      error_action: "log_and_skip"
+
+# Logging
+logging:
+  enabled: true
+  log_level: "INFO"
+  log_tool_usage: true
+  log_context_sharing: true
+
+# Metrics Collection
+metrics:
+  enabled: true
+  collect_usage_stats: true
+  collect_performance_metrics: true
+  aggregation_interval_seconds: 60
