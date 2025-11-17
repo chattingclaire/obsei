@@ -9,8 +9,8 @@ python-dotenv>=1.0.0
 pyyaml>=6.0
 
 # Database
-supabase>=2.0.0
-postgrest-py>=0.13.0
+supabase>=1.0.0
+postgrest-py>=0.10.0
 
 # API Clients
 tweepy>=4.14.0
