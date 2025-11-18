@@ -33,6 +33,11 @@ class AdvancedMemoryManager:
         try:
             from mem0 import Memory
 
+            # Check if we have necessary API keys
+            claude_api_key = os.getenv("CLAUDE_API_KEY")
+            if not claude_api_key:
+                raise ValueError("CLAUDE_API_KEY not set")
+
             mem0_config = {
                 "vector_store": {
                     "provider": "qdrant",
@@ -46,7 +51,13 @@ class AdvancedMemoryManager:
                     "provider": "anthropic",
                     "config": {
                         "model": os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514"),
-                        "api_key": os.getenv("CLAUDE_API_KEY")
+                        "api_key": claude_api_key
+                    }
+                },
+                "embedder": {
+                    "provider": "huggingface",
+                    "config": {
+                        "model": "sentence-transformers/all-MiniLM-L6-v2"
                     }
                 }
             }
